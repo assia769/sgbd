@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Dashboard Administrateur</h2>
+
+    <div class="row">
+        <!-- Section Ajout de Document -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Ajouter un document</h3>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('add_document') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="titre" class="form-label">Titre</label>
+                            <input type="text" class="form-control" id="titre" name="titre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="annee" class="form-label">Année de publication</label>
+                            <input type="number" class="form-control" id="annee" name="annee" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editeur" class="form-label">Éditeur</label>
+                            <input type="text" class="form-control" id="editeur" name="editeur" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="type_document" class="form-label">Type de document</label>
+                            <select class="form-control" id="type_document" name="type_document" required>
+                                <option value="livre">Livre</option>
+                                <option value="periodique">Périodique</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Ajouter le document</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Nouvel Emprunt -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Nouvel Emprunt</h3>
+                </div>
+                <div class="card-body">
+                    <form id="empruntForm">
+                        <div class="mb-3">
+                            <label for="id_utilisateur" class="form-label">Utilisateur:</label>
+                            <select id="id_utilisateur" class="form-select" required>
+                                <option value="">Sélectionnez un utilisateur</option>
+                                {% for utilisateur in utilisateurs %}
+                                <option value="{{ utilisateur[0] }}">
+                                    {{ utilisateur[1] }} ({{ utilisateur[2] }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="document" class="form-label">Document:</label>
+                            <select id="document" class="form-select" required>
+                                <option value="">Sélectionnez un document</option>
+                                {% for doc in documents %}
+                                <option value="{{ doc[0] }}">
+                                    {{ doc[1] }} ({{ doc[2] }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="exemplaire" class="form-label">Exemplaire disponible:</label>
+                            <select id="exemplaire" class="form-select" required disabled>
+                                <option value="">Sélectionnez d'abord un document</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Créer l'emprunt</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
+
+    <!-- Section Liste des Documents -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Documents de la bibliothèque</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Type</th>
+                            <th>Année</th>
+                            <th>Éditeur</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in documents %}
+                        <tr>
+                            <td>{{ doc[1] }}</td>
+                            <td>{{ doc[4] }}</td>
+                            <td>{{ doc[2] }}</td>
+                            <td>{{ doc[3] }}</td>
+                            <td>{{ doc[5] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Emprunts en Cours -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Emprunts en Cours</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Utilisateur</th>
+                            <th>Document</th>
+                            <th>Date d'emprunt</th>
+                            <th>Date de retour prévue</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for emprunt in emprunts %}
+                        <tr>
+                            <td>{{ emprunt.nom_utilisateur }}</td>
+                            <td>{{ emprunt.titre_document }}</td>
+                            <td>{{ emprunt.date_debut }}</td>
+                            <td>{{ emprunt.date_fin }}</td>
+                            <td>
+                                <span class="badge {% if emprunt.statut == 'en cours' %}bg-primary
+                                      {% elif emprunt.statut == 'retard' %}bg-danger
+                                      {% else %}bg-success{% endif %}">
+                                    {{ emprunt.statut }}
+                                </span>
+                            </td>
+                            <td>
+                                <button onclick="marquerRendu({{ emprunt.id_emprunt }})" 
+                                        class="btn btn-sm btn-success"
+                                        {% if emprunt.statut == 'rendu' %}disabled{% endif %}>
+                                    Marquer comme rendu
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Mise à jour des exemplaires disponibles
+document.getElementById('document').addEventListener('change', function() {
+    const documentId = this.value;
+    const exemplaireSelect = document.getElementById('exemplaire');
+    exemplaireSelect.disabled = true;
+    exemplaireSelect.innerHTML = '<option value="">Chargement...</option>';
+
+    if (documentId) {
+        fetch(`/api/exemplaires-disponibles/${documentId}`)
+            .then(response => response.json())
+            .then(data => {
+                exemplaireSelect.innerHTML = '<option value="">Sélectionnez un exemplaire</option>';
+                data.exemplaires.forEach(exemplaire => {
+                    exemplaireSelect.innerHTML += `<option value="${exemplaire.id_exemplaire}">
+                        Exemplaire ${exemplaire.id_exemplaire} - ${exemplaire.etat}
+                    </option>`;
+                });
+                exemplaireSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                exemplaireSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+            });
+    }
+});
+
+// Soumission du formulaire d'emprunt
+document.getElementById('empruntForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const data = {
+        id_utilisateur: document.getElementById('id_utilisateur').value,
+        id_exemplaire: document.getElementById('exemplaire').value
+    };
+
+    fetch('/api/creer-emprunt', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Emprunt créé avec succès !');
+            location.reload();
+        } else {
+            alert(data.message || 'Erreur lors de la création de l\'emprunt');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue');
+    });
+});
+
+// Fonction pour marquer un emprunt comme rendu
+function marquerRendu(id_emprunt) {
+    if (confirm('Voulez-vous marquer cet emprunt comme rendu ?')) {
+        fetch(`/api/marquer-rendu/${id_emprunt}`, {
+            method: 'POST',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Erreur lors du retour');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue');
+        });
+    }
+}
+</script>
+{% endblock %}

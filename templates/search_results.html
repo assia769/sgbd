@@ -1,0 +1,41 @@
+<!-- templates/search_results.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-4">Résultats de la recherche</h2>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Auteur</th>
+                <th>Année</th>
+                <th>Éditeur</th>
+                <th>Type</th>
+                {% if 'user_id' in session %}
+                <th>Action</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{{ result[1] }}</td>
+                <td>{{ result[8] if result[8] else 'N/A' }}</td>
+                <td>{{ result[2] }}</td>
+                <td>{{ result[3] }}</td>
+                <td>{{ result[4] }}</td>
+                {% if 'user_id' in session %}
+                <td>
+                    <form action="{{ url_for('request_borrow', document_id=result[0]) }}" method="post">
+                        <button type="submit" class="btn btn-sm btn-primary">Emprunter</button>
+                    </form>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

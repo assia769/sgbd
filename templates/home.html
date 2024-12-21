@@ -1,0 +1,55 @@
+
+
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h1>Bienvenue à la Bibliothèque</h1>
+    <p class="lead">Découvrez notre collection de livres et documents</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col">
+        <form action="{{ url_for('search') }}" method="get" class="d-flex">
+            <input type="text" name="query" class="form-control me-2" placeholder="Rechercher un livre...">
+            <button type="submit" class="btn btn-primary">Rechercher</button>
+        </form>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Auteur</th>
+                <th>Année</th>
+                <th>Éditeur</th>
+                <th>ISBN</th>
+                {% if 'user_id' in session %}
+                <th>Action</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td>{{ book[1] }}</td>
+                <td>{{ book[8] if book[8] else 'N/A' }}</td>
+                <td>{{ book[2] }}</td>
+                <td>{{ book[3] }}</td>
+                <td>{{ book[9] if book[9] else 'N/A' }}</td>
+                {% if 'user_id' in session %}
+                <td>
+                    <form action="{{ url_for('request_borrow', document_id=book[0]) }}" method="post">
+                        <button type="submit" class="btn btn-sm btn-primary">Emprunter</button>
+                    </form>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

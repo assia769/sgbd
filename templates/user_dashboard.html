@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-4">Mon espace utilisateur</h2>
+
+<!-- Section Recherche et Emprunt -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h3>Rechercher un document</h3>
+    </div>
+    <div class="card-body">
+        <form class="mb-3" action="{{ url_for('search') }}" method="GET">
+            <div class="input-group">
+                <input type="text" class="form-control" name="q" placeholder="Rechercher un document...">
+                <button class="btn btn-primary" type="submit">Rechercher</button>
+            </div>
+        </form>
+
+        {% if search_results %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Auteur</th>
+                        <th>Disponibilité</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in search_results %}
+                    <tr>
+                        <td>{{ doc.titre }}</td>
+                        <td>{{ doc.auteur }}</td>
+                        <td>
+                            {% if doc.disponible %}
+                            <span class="badge bg-success">Disponible</span>
+                            {% else %}
+                            <span class="badge bg-danger">Indisponible</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if doc.disponible %}
+                            <button onclick="emprunterDocument({{ doc.id }})" 
+                                    class="btn btn-sm btn-primary">
+                                Emprunter
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Section Mes Emprunts -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h3>Mes emprunts</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Document</th>
+                        <th>Date d'emprunt</th>
+                        <th>Date de retour prévue</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emprunt in emprunts %}
+                    <tr>
+                        <td>{{ emprunt[0] }}</td>
+                        <td>{{ emprunt[1] }}</td>
+                        <td>{{ emprunt[2] }}</td>
+                        <td>
+                            <span class="badge {% if emprunt[3] == 'en cours' %}bg-primary
+                                  {% elif emprunt[3] == 'retard' %}bg-danger
+                                  {% else %}bg-success{% endif %}">
+                                {{ emprunt[3] }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript pour la gestion des emprunts -->
+<script>
+function emprunterDocument(documentId) {
+    if (confirm('Voulez-vous emprunter ce document ?')) {
+        fetch(`/request_borrow/${documentId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Emprunt effectué avec succès !');
+                location.reload();
+            } else {
+                alert(data.message || 'Une erreur est survenue');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue');
+        });
+    }
+}
+</script>
+{% endblock %}
